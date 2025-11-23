@@ -1,0 +1,20 @@
+{
+  "cities": {
+    "Paris":   { "wheat": 35, "iron": 80, "textiles": 55, "spices": 70, "wine": 40 },
+    "Berlin":  { "wheat": 22, "iron": 95, "textiles": 40, "spices": 65, "wine": 60 },
+    "Rome":    { "wheat": 50, "iron": 60, "textiles": 30, "spices": 55, "wine": 75 },
+    "Madrid":  { "wheat": 28, "iron": 70, "textiles": 65, "spices": 80, "wine": 45 },
+    "Amsterdam": { "wheat": 25, "iron": 85, "textiles": 45, "spices": 72, "wine": 38 },
+    "Athens":  { "wheat": 40, "iron": 55, "textiles": 35, "spices": 50, "wine": 70 },
+    "Prague":  { "wheat": 32, "iron": 90, "textiles": 52, "spices": 68, "wine": 52 }
+  },
+  "roads": [
+    ["Paris", "Berlin", 20],
+    ["Paris", "Amsterdam", 15],
+    ["Berlin", "Prague", 10],
+    ["Berlin", "Rome", 25],
+    ["Rome", "Athens", 20],
+    ["Rome", "Madrid", 30],
+    ["Amsterdam", "Prague", 18]
+  ]
+}
