@@ -104,17 +104,6 @@ board.output = board.print
 
 POS = compute_positions_fixed(g, board.nrows, board.ncols)
 
-# ---------- Compact-view toggle ----------
-_compact_view = False
-
-def toggle_compact_view():
-    global _compact_view
-    _compact_view = not _compact_view
-    if _compact_view:
-        draw_world("Compact view: controls hidden. Press V to restore.")
-    else:
-        draw_world("Controls restored.")
-
 # ---------- Helpers ----------
 def _clear():
     for r in range(board.nrows):
@@ -147,25 +136,21 @@ def draw_world(message=None):
         else:
             board[r][c] = f"[C]{name}"
 
-    if _compact_view:
-        info = f"\n{here} | ${game.player.money} | Fuel: {game.player.fuel}   (V restores controls)"
-    else:
-        info = (
-            f"\nYou are in {here}\n"
-            f"Money: ${game.player.money} | Fuel: {game.player.fuel}\n"
-            f"Connected cities: {neighbor_text(here)}\n"
-            "Click a [>] city to travel.\n\n"
-            "Controls:\n"
-            "  P - Show prices\n"
-            "  B - Buy items\n"
-            "  S - Sell items\n"
-            "  A - Ask AI for trade advice\n"
-            "  H - Show travel history\n"
-            "  I - View inventory\n"
-            "  V - Toggle compact view (hides this menu)\n"
-            "  ENTER - Back to map\n"
-            "  Q - Quit\n"
-        )
+    info = (
+        f"\nYou are in {here}\n"
+        f"Money: ${game.player.money} | Fuel: {game.player.fuel}\n"
+        f"Connected cities: {neighbor_text(here)}\n"
+        "Click a [>] city to travel.\n\n"
+        "Controls:\n"
+        "  P - Show prices\n"
+        "  B - Buy items\n"
+        "  S - Sell items\n"
+        "  A - Ask AI for trade advice\n"
+        "  H - Show travel history\n"
+        "  I - View inventory\n"
+        "  ENTER - Back to map\n"
+        "  Q - Quit\n"
+    )
     if message:
         info += "\n" + message
     board.output(info)
@@ -285,8 +270,6 @@ def on_key(k):
             board.output(f"AI post-process error: {e}")
             return
         draw_world(msg)
-    elif k == "v":
-        toggle_compact_view()
     elif k == "h":
         show_history()
     elif k == "i":
