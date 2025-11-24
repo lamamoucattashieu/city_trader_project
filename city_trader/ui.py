@@ -34,103 +34,80 @@ start_city = next(iter(cities.keys()), "Paris")
 player = Player(start_city, fuel=100, money=500)
 game = Game(g, cities, player)
 
+# ---------- Grid sizing (decide rows/cols before Board) ----------
+n = max(1, len(cities))
+# place cities in a compact grid determined by number of cities
+grid_side = math.ceil(math.sqrt(n))
+grid_rows = max(6, min(12, grid_side + 1))          # keep rows small but >=6
+grid_cols = max(10, min(28, grid_side * 2))         # wider grid for labels
+
+# reduce total cells if there are very few cities to make cells larger
+if n <= 4:
+    grid_rows = max(6, 6)
+    grid_cols = max(8, 8)
+elif n <= 9:
+    grid_rows = max(6, 7)
+    grid_cols = max(10, 10)
+
 # ---------- Layout helper (must exist before Board) ----------
-def compute_positions(graph: Graph, rows: int, cols: int):
+def compute_positions_fixed(graph: Graph, rows: int, cols: int):
+    """Deterministic even grid placement: spreads N nodes across rows/cols so all are visible."""
     nodes = list(getattr(graph, "cities", {}).keys())
     if not nodes:
         return {}
-    if len(nodes) == 1:
-        return {nodes[0]: (rows // 2, cols // 2)}
+    m = len(nodes)
+    # choose a small internal grid to place nodes (grid_r x grid_c)
+    grid_r = math.ceil(math.sqrt(m))
+    grid_c = math.ceil(m / grid_r)
+    positions = {}
+    for i, name in enumerate(nodes):
+        r_idx = i // grid_c
+        c_idx = i % grid_c
+        if grid_r > 1:
+            r = 1 + int(r_idx * (rows - 3) / max(1, grid_r - 1))
+        else:
+            r = rows // 2
+        if grid_c > 1:
+            c = 1 + int(c_idx * (cols - 3) / max(1, grid_c - 1))
+        else:
+            c = cols // 2
+        positions[name] = (min(rows - 2, max(1, r)), min(cols - 2, max(1, c)))
+    return positions
 
-    W, H = max(2, cols - 2), max(2, rows - 2)
-    pos = {n: [random.uniform(1, W), random.uniform(1, H)] for n in nodes}
-    edges = []
-    for u in nodes:
-        for v, cost in graph.cities.get(u, {}).items():
-            if (v, u) in [(e[0], e[1]) for e in edges]:
-                continue
-            try:
-                w = 1.0 / max(1.0, float(cost))
-            except Exception:
-                w = 1.0
-            edges.append((u, v, w))
-
-    def dist(a, b):
-        dx = pos[a][0] - pos[b][0]
-        dy = pos[a][1] - pos[b][1]
-        return math.hypot(dx, dy) + 1e-6
-
-    def repel(d): return 2.0 / (d * d + 1e-3)
-    def attract(d, w): return w * (d * d) / 2.0
-
-    for _ in range(100):
-        disp = {n: [0.0, 0.0] for n in nodes}
-        for i, u in enumerate(nodes):
-            for j in range(i + 1, len(nodes)):
-                v = nodes[j]
-                d = dist(u, v)
-                f = repel(d)
-                dx = pos[u][0] - pos[v][0]; dy = pos[u][1] - pos[v][1]
-                if d > 0:
-                    fx, fy = f * dx / d, f * dy / d
-                    disp[u][0] += fx; disp[u][1] += fy
-                    disp[v][0] -= fx; disp[v][1] -= fy
-        for (u, v, w) in edges:
-            d = dist(u, v)
-            f = attract(d, w)
-            dx = pos[u][0] - pos[v][0]; dy = pos[u][1] - pos[v][1]
-            if d > 0:
-                fx, fy = f * dx / d, f * dy / d
-                disp[u][0] -= fx; disp[u][1] -= fy
-                disp[v][0] += fx; disp[v][1] += fy
-        for n in nodes:
-            pos[n][0] += 0.05 * disp[n][0]
-            pos[n][1] += 0.05 * disp[n][1]
-            pos[n][0] = min(max(pos[n][0], 1), W)
-            pos[n][1] = min(max(pos[n][1], 1), H)
-
-    mapping = {}
-    for n in nodes:
-        r = 1 + int((pos[n][1] / max(1.0, W)) * (rows - 3))
-        c = 1 + int((pos[n][0] / max(1.0, H)) * (cols - 3))
-        mapping[n] = (min(rows - 2, max(1, r)), min(cols - 2, max(1, c)))
-    return mapping
-
-# ...existing code...
-# ---------- Board ----------
-# fewer cells and larger boxes for clearer UI
-board = Board(12, 20)          # was Board(20, 36) — fewer rows/cols => larger visible cells
+# ---------- Board (compute cell_size to maximize size but fit screen) ----------
+board = Board(grid_rows, grid_cols)
 _original_cell_size = getattr(board, "cell_size", 35)
 _original_margin = getattr(board, "margin", 10)
 
-# compute a screen-aware cell size but cap it so boxes are large
-MAX_CELL = 48                  # maximum pixel size per cell (increase if you want bigger boxes)
-MIN_CELL = 12                  # minimum allowed cell size
+MIN_CELL = 16
+MAX_CELL = 96
 
 try:
     _root_tmp = Tk()
     sw, sh = _root_tmp.winfo_screenwidth(), _root_tmp.winfo_screenheight()
     _root_tmp.destroy()
-    # conservative bounds to fit the new smaller grid
-    max_cell_w = max(MIN_CELL, min(MAX_CELL, sw // (board.ncols + 4)))
-    max_cell_h = max(MIN_CELL, min(MAX_CELL, sh // (board.nrows + 6)))
-    board.cell_size = min(max_cell_w, max_cell_h)
+    usable_w = max(300, sw - 160)
+    usable_h = max(240, sh - 200)
+    # compute largest cell that fits both directions
+    cell_w = usable_w // (board.ncols + 2)
+    cell_h = usable_h // (board.nrows + 4)
+    cell_size = max(MIN_CELL, min(MAX_CELL, min(cell_w, cell_h)))
+    board.cell_size = cell_size
+    board.margin = max(4, int(cell_size // 6))
 except Exception:
     board.cell_size = _original_cell_size
+    board.margin = _original_margin
 
 board.title = "City Trader (Board Game)"
-board.margin = _original_margin
 board.create_output(background="white")
 board.output = board.print
 
-# recompute positions for the new grid size
-POS = compute_positions(g, board.nrows, board.ncols)
+POS = compute_positions_fixed(g, board.nrows, board.ncols)
 
-# ---------- Compact-view toggle (no restart, preserves state) ----------
+# ---------- Compact-view toggle ----------
 _compact_view = False
 
 def toggle_compact_view():
-    """Toggle compact info (hide long controls/help). Preserves game state."""
     global _compact_view
     _compact_view = not _compact_view
     if _compact_view:
@@ -162,7 +139,6 @@ def draw_world(message=None):
     _clear()
     here = game.player.location
     reach = neighbors(here)
-
     for name, (r, c) in POS.items():
         if name == here:
             board[r][c] = f"[P]{name}"
@@ -172,7 +148,6 @@ def draw_world(message=None):
             board[r][c] = f"[C]{name}"
 
     if _compact_view:
-        # very small footer so output area stays minimal
         info = f"\n{here} | ${game.player.money} | Fuel: {game.player.fuel}   (V restores controls)"
     else:
         info = (
