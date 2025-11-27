@@ -104,6 +104,9 @@ board.output = board.print
 
 POS = compute_positions_fixed(g, board.nrows, board.ncols)
 
+# ---------- Game state ----------
+_game_over = False
+
 # ---------- Helpers ----------
 def _clear():
     for r in range(board.nrows):
@@ -123,8 +126,44 @@ def get_input(prompt):
     except Exception:
         return None
 
+def check_game_over():
+    """Check if player can reach any connected city. If not, end game."""
+    global _game_over
+    here = game.player.location
+    reach = neighbors(here)
+    can_travel = False
+    for city in reach:
+        fuel_cost = g.cities[here].get(city, float('inf'))
+        if fuel_cost <= game.player.fuel:
+            can_travel = True
+            break
+    if not can_travel:
+        _game_over = True
+        end_game()
+
+def end_game():
+    """Display game over screen with history and final profit."""
+    _clear()
+    board.output("GAME OVER - Out of fuel!\n")
+    try:
+        node = game.history.head
+        lines = ["Your Journey:"]
+        i = 1
+        while node:
+            lines.append(f"{i}. {node.action}: {node.details}")
+            node = node.next
+            i += 1
+        lines.append(f"\nFinal Profit: ${game.profit()}")
+        lines.append("Thanks for playing!")
+        board.output("\n".join(lines))
+    except Exception:
+        board.output(f"Final Profit: ${game.profit()}\nThanks for playing!")
+
 # ---------- Display ----------
 def draw_world(message=None):
+    if _game_over:
+        return
+    
     _clear()
     here = game.player.location
     reach = neighbors(here)
@@ -198,6 +237,8 @@ def show_inventory():
 
 # ---------- Interaction ----------
 def click_city(button, r, c):
+    if _game_over:
+        return
     here = game.player.location
     for name, pos in POS.items():
         if pos == (r, c):
@@ -209,11 +250,16 @@ def click_city(button, r, c):
                 return
             res = game.travel(name)
             draw_world(res)
+            check_game_over()
             return
 
 board.on_mouse_click = click_city
 
 def on_key(k):
+    global _game_over
+    if _game_over:
+        return
+    
     k = k.lower()
     if k == "p":
         show_prices()
@@ -277,6 +323,7 @@ def on_key(k):
     elif k == "\r":
         draw_world("Returned to main map.")
     elif k == "q":
+        _game_over = True
         try:
             show_history()
             board.output(f"Final profit: ${game.profit()}\nThanks for playing!")
