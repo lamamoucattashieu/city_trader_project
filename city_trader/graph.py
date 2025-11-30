@@ -16,9 +16,12 @@ class Graph:
     def neighbors(self, city):
         return self.cities.get(city, {}).items()
 
-    # ...existing code...
     def dijkstra(self, source):
-        """Return (dist, prev) where dist[city] is min fuel cost from source, prev is predecessor map."""
+        # Let V = number of cities, E = number of roads
+        # Average-case time complexity: O((V + E) log V)
+        # Worst-case time complexity: O((V + E) log V)
+
+        # Return (dist, prev) where dist[city] is min fuel cost from source, prev is predecessor map.
         import heapq
         if source not in self.cities:
             return {}, {}
@@ -43,4 +46,3 @@ class Graph:
                     prev[v] = u
                     heapq.heappush(pq, (nd, v))
         return dist, prev
-# ...existing code...

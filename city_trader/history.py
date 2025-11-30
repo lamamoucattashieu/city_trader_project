@@ -1,5 +1,3 @@
-# city_trader/history.py
-
 class ActionNode:
     def __init__(self, action, details):
         self.action = action      # e.g. "Travel", "Buy", "Sell"
@@ -22,7 +20,11 @@ class History:
             self.tail = node
 
     def show(self):
-        """Return a list of formatted history strings."""
+        # Let n be the number of actions in history
+        # Average-case time complexity: O(n)
+        # Worst-case time complexity: O(n)
+        
+        # Return a list of formatted history strings.
         if not self.head:
             return ["No actions recorded."]
         result = []

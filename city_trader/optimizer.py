@@ -1,7 +1,13 @@
-# city_trader/optimizer.py
 
-# ...existing code...
 def suggest_best_move(graph, cities, current_city, fuel_left):
+    # Let V = number of cities, E = number of roads, G = number of goods in the current city
+    # Average-case time complexity: O((V + E) log V + V·G)
+    # Worst-case time complexity: O((V + E) log V + V·G)
+    #   Explanation:
+    #     - Dijkstra = O((V + E) log V)
+    #     - Nested loop: for each destination city, check up to G goods → O(V·G)
+    #     - All dictionary lookups inside loops are O(1)
+    
     best_profit = 0
     best_city = None
     best_good = None

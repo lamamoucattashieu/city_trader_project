@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from game2dboard import Board
 from tkinter import simpledialog, Tk
 from pathlib import Path
@@ -14,7 +13,7 @@ from city_trader.player import Player
 from city_trader.game import Game
 from city_trader.optimizer import suggest_best_move
 
-# ---------- Load world ----------
+# loading the world data 
 world_path = Path(__file__).parent / "data" / "world.json"
 try:
     world = json.loads(world_path.read_text(encoding="utf-8"))
@@ -30,11 +29,11 @@ for road in world.get("roads", []):
         continue
 
 cities = {name: City(name, goods) for name, goods in world.get("cities", {}).items()}
-start_city = next(iter(cities.keys()), "Paris")
+start_city = random.choice(list(cities.keys())) if cities else "Paris"
 player = Player(start_city, fuel=100, money=500)
 game = Game(g, cities, player)
 
-# ---------- Grid sizing (decide rows/cols before Board) ----------
+#  Grid sizing (decide rows/cols before Board)
 n = max(1, len(cities))
 # place cities in a compact grid determined by number of cities
 grid_side = math.ceil(math.sqrt(n))
@@ -49,9 +48,9 @@ elif n <= 9:
     grid_rows = max(6, 7)
     grid_cols = max(10, 10)
 
-# ---------- Layout helper (must exist before Board) ----------
+# Layout helper (must exist before Board) 
 def compute_positions_fixed(graph: Graph, rows: int, cols: int):
-    """Deterministic even grid placement: spreads N nodes across rows/cols so all are visible."""
+    # Deterministic even grid placement: spreads N nodes across rows/cols so all are visible.S
     nodes = list(getattr(graph, "cities", {}).keys())
     if not nodes:
         return {}
@@ -74,7 +73,7 @@ def compute_positions_fixed(graph: Graph, rows: int, cols: int):
         positions[name] = (min(rows - 2, max(1, r)), min(cols - 2, max(1, c)))
     return positions
 
-# ---------- Board (compute cell_size to maximize size but fit screen) ----------
+# Board (compute cell_size to maximize size but fit screen)
 board = Board(grid_rows, grid_cols)
 _original_cell_size = getattr(board, "cell_size", 35)
 _original_margin = getattr(board, "margin", 10)
@@ -104,10 +103,10 @@ board.output = board.print
 
 POS = compute_positions_fixed(g, board.nrows, board.ncols)
 
-# ---------- Game state ----------
+# Game state
 _game_over = False
 
-# ---------- Helpers ----------
+# Helpers
 def _clear():
     for r in range(board.nrows):
         for c in range(board.ncols):
@@ -127,7 +126,10 @@ def get_input(prompt):
         return None
 
 def check_game_over():
-    """Check if player can reach any connected city. If not, end game."""
+    # Let d = degree of the current city (number of neighbors)
+    # Average-case time complexity: O(d)
+    # Worst-case time complexity: O(d)
+    # Check if player can reach any connected city. If not, end game.
     global _game_over
     here = game.player.location
     reach = neighbors(here)
@@ -142,7 +144,10 @@ def check_game_over():
         end_game()
 
 def end_game():
-    """Display game over screen with history and final profit."""
+    # Let H be the number of actions in history
+    # Average-case time complexity: O(H)
+    # Worst-case time complexity: O(H)
+    # Display game over screen with history and final profit.
     _clear()
     board.output("GAME OVER - Out of fuel!\n")
     try:
@@ -159,8 +164,12 @@ def end_game():
     except Exception:
         board.output(f"Final Profit: ${game.profit()}\nThanks for playing!")
 
-# ---------- Display ----------
+#  Display 
 def draw_world(message=None):
+    # Let N be the number of cities
+    # Average-case time complexity: O(N)
+    # Worst-case time complexity: O(N)
+
     if _game_over:
         return
     
@@ -194,8 +203,12 @@ def draw_world(message=None):
         info += "\n" + message
     board.output(info)
 
-# ---------- Gameplay displays ----------
+#  Gameplay displays 
 def show_prices():
+    # Let C = number of cities, G = total unique goods
+    # Average-case time complexity: O(C·G)
+    # Worst-case time complexity: O(C·G)
+
     goods = sorted({g for c in cities.values() for g in c.goods})
     lines = ["\nMarket Prices:"]
     header = "City".ljust(14) + "".join(g[:10].rjust(10) for g in goods)
@@ -211,6 +224,10 @@ def show_prices():
     board.output("\n".join(lines))
 
 def show_history():
+    # Let H be the number of actions in history
+    # Average-case time complexity: O(H)
+    # Worst-case time complexity: O(H)
+
     try:
         node = game.history.head
         lines = ["\nYour Journey:"]
@@ -225,6 +242,10 @@ def show_history():
         board.output("No history available.")
 
 def show_inventory():
+    # Let I be the number of distinct items in the inventory
+    # Average-case time complexity: O(I)
+    # Worst-case time complexity: O(I)
+
     inv = getattr(game.player, "inventory", {}) or {}
     lines = ["\nYour Inventory:"]
     if not inv:
@@ -235,8 +256,13 @@ def show_inventory():
     lines.append("\nPress ENTER to return.")
     board.output("\n".join(lines))
 
-# ---------- Interaction ----------
+#  Interaction 
 def click_city(button, r, c):
+    # Let N be the number of cities, d be degree of current city
+    # Average-case time complexity: O(N + d)
+    # Worst-case time complexity: O(N + d)
+    #   (scan POS for clicked city, then possibly scan neighbors for fuel check)
+    global _game_over
     if _game_over:
         return
     here = game.player.location
@@ -250,12 +276,26 @@ def click_city(button, r, c):
                 return
             res = game.travel(name)
             draw_world(res)
-            check_game_over()
+            
+            # Only end game if travel failed AND player can't go anywhere
+            if "Not enough fuel" in res:
+                reach = neighbors(game.player.location)
+                can_travel = any(
+                    g.cities[game.player.location].get(c, float('inf')) <= game.player.fuel
+                    for c in reach
+                )
+                if not can_travel:
+                    _game_over = True
+                    end_game()
             return
 
 board.on_mouse_click = click_city
 
 def on_key(k):
+    # on_key itself is O(1) per press, ignoring the cost of called helpers.
+    # The heaviest call it triggers is suggest_best_move, which is:
+    #   O((V + E) log V + V·G)  (same as earlier annotation)
+
     global _game_over
     if _game_over:
         return
@@ -339,6 +379,6 @@ def on_key(k):
 
 board.on_key_press = on_key
 
-# ---------- Start ----------
+# Start
 draw_world("Welcome! Click a [>] city to travel or use keys below.")
 board.show()

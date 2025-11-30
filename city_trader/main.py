@@ -7,8 +7,10 @@ from city_trader.game import Game
 from city_trader.optimizer import suggest_best_move
 
 def show_price_table(cities):
-    """Pretty-print a table of goods per city."""
-    print("\n📊 Current Market Prices:")
+    # Pretty-print a table of goods per city.
+    # Average-case time complexity: O(C·G)
+    # Worst-case time complexity: O(C·G)
+    print("\n Current Market Prices:")
     goods = set()
     for city in cities.values():
         goods.update(city.goods.keys())
@@ -32,7 +34,7 @@ def show_price_table(cities):
         print(" | ".join(str(row[i]).ljust(col_widths[i]) for i in range(len(row))))
 
 def main():
-    # Load world.json next to this file, under data/
+
     world_path = Path(__file__).parent / "data" / "world.json"
     with world_path.open("r") as f:
         world = json.load(f)
@@ -46,7 +48,7 @@ def main():
     player = Player("Paris")
     game = Game(g, cities, player)
 
-    print("🌍 Welcome to City Trader!")
+    print("Welcome to City Trader!")
     print(f"Starting in {player.location} with ${player.money} and {player.fuel} fuel.")
 
     ai_used = False  # track usage 
@@ -64,12 +66,12 @@ def main():
         if choice == "1":
             connected = list(g.cities.get(player.location, {}).keys())
             if not connected:
-                print("❌ No available routes from this city!")
+                print("No available routes from this city!")
                 continue
             print(f"Connected cities: {connected}")
             dest = input("Enter destination city: ").strip()
             if dest not in connected:
-                print("❌ Invalid destination — must be one of the connected cities.")
+                print("Invalid destination — must be one of the connected cities.")
                 continue
             print(game.travel(dest))
 
@@ -79,16 +81,16 @@ def main():
             item = input("What item to buy? ").strip().lower()
 
             if item not in cities[player.location].goods:
-                print("❌ This city doesn’t sell that item.")
+                print("This city doesn’t sell that item.")
                 continue
 
             try:
                 qty = int(input("Quantity: ").strip())
                 if qty <= 0:
-                    print("❌ Quantity must be positive.")
+                    print("Quantity must be positive.")
                     continue
             except ValueError:
-                print("❌ Invalid input — please enter a number.")
+                print("Invalid input — please enter a number.")
                 continue
 
             print(game.buy(item, qty))
@@ -96,23 +98,23 @@ def main():
 
         elif choice == "3":
             if not player.inventory:
-                print("❌ You have nothing to sell.")
+                print("You have nothing to sell.")
                 continue
             show_price_table(cities)
             print(f"You are in {player.location}. Your inventory: {player.inventory}")
             item = input("What item to sell? ").strip().lower()
 
             if item not in player.inventory or player.inventory[item] <= 0:
-                print("❌ You don’t have any of that item.")
+                print("You don’t have any of that item.")
                 continue
 
             try:
                 qty = int(input("Quantity: ").strip())
                 if qty <= 0:
-                    print("❌ Quantity must be positive.")
+                    print("Quantity must be positive.")
                     continue
             except ValueError:
-                print("❌ Invalid input — please enter a number.")
+                print("Invalid input — please enter a number.")
                 continue
 
             print(game.sell(item, qty))
@@ -123,17 +125,17 @@ def main():
         
         elif choice == "5":
             print(f"Final profit: ${game.profit()}")
-            print("Thanks for playing City Trader! 🚀")
+            print("Thanks for playing City Trader!")
             break
 
         elif choice == "6":
             if ai_used:
-                print("❌ You already used your AI assistant this game.")
+                print("You already used your AI assistant this game.")
                 continue
 
             best_city, best_good, est_profit = suggest_best_move(g, cities, player.location, player.fuel)
             if not best_city:
-                print("🤖 You can still travel, but no trades look profitable right now.")
+                print("You can still travel, but no trades look profitable right now.")
                 continue
 
             # spell out the plan
