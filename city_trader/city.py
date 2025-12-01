@@ -1,9 +1,7 @@
 class City:
     def __init__(self, name, goods):
-        """
-        name: str — city name
-        goods: dict — items and their prices, e.g. {'wheat': 30, 'iron': 50}
-        """
+        # average time complexity: O(n)
+        # worst case time complexity: O(n)
         self.name = name
         self.goods = goods
 
