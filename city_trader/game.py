@@ -6,6 +6,7 @@ from city_trader.history import History
 
 class Game:
     def __init__(self, graph: Graph, cities: dict[str, City], player: Player):
+        # average and worst case time complexity: O(n)
         self.graph = graph
         self.cities = cities
         self.player = player
@@ -13,7 +14,7 @@ class Game:
         self.history = History()
 
     def travel(self, destination: str):
-        
+        # average and worst case time complexity: O(n)
         location = self.player.location
 
         # Prevent traveling to the same city
@@ -37,7 +38,7 @@ class Game:
         return f"  Traveled to {destination}. Fuel left: {self.player.fuel}"
 
     def buy(self, item: str, quantity: int):
-        
+        # average and worst case time complexity: O(n)
         city = self.cities[self.player.location]
         if item not in city.goods:
             return "This city doesn’t sell that item."
@@ -55,7 +56,7 @@ class Game:
         return f"Bought {quantity} {item} for ${total_cost}."
 
     def sell(self, item: str, quantity: int):
-
+        # average and worst case time complexity: O(n)
         if self.player.inventory.get(item, 0) < quantity:
             return "You don’t have enough items to sell."
 
