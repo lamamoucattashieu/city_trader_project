@@ -10,7 +10,6 @@ class History:
         self.tail = None
 
     def add(self, action, details):
-        """Add a new action node to the history."""
         node = ActionNode(action, details)
         if not self.head:
             self.head = node
