@@ -1,15 +1,18 @@
 class ActionNode:
     def __init__(self, action, details):
+        # average and worst case time complexity: O(1)
         self.action = action      # e.g. "Travel", "Buy", "Sell"
         self.details = details    # e.g. "Traveled to Berlin"
         self.next = None
 
 class History:
     def __init__(self):
+        # average and worst case time complexity: O(1)
         self.head = None
         self.tail = None
 
     def add(self, action, details):
+        # average and worst case time complexity: O(1)
         node = ActionNode(action, details)
         if not self.head:
             self.head = node
