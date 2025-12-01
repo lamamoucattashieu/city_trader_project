@@ -1,19 +1,25 @@
 class Graph:
     def __init__(self):
         # adjacency list: { city: { neighbor: fuel_cost } }
+        # Average and worst case time complexity: O(1)
         self.cities = {}
 
     def add_city(self, name):
+        # Average time complexity: O(1)
+        # Worst case time complexity: O(n)
         if name not in self.cities:
             self.cities[name] = {}
 
     def add_road(self, city1, city2, fuel_cost):
+        # Average time complexity: O(1)
+        # Worst case time complexity: O(n)
         self.add_city(city1)
         self.add_city(city2)
         self.cities[city1][city2] = fuel_cost
         self.cities[city2][city1] = fuel_cost  # undirected
 
     def neighbors(self, city):
+        # Average and worst case time complexity: O(1)
         return self.cities.get(city, {}).items()
 
     def dijkstra(self, source):
