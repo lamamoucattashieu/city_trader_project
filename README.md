@@ -9,7 +9,7 @@ The goal of the game is to make profit by moving between connected cities, buyin
 # Notes
 The graphical board interface uses the game2dboard library, it uses Python's built-in Tkinter module.
 
-#Tkinter warning
+# Tkinter warning
 
 If your Python installation does not include Tkinter, the graphical interface will not work.
 The game interface does not render properly on native Windows or macOS. For best user experience, use WSL. 
