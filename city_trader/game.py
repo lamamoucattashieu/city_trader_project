@@ -13,7 +13,6 @@ class Game:
         self.history = History()
 
     def travel(self, destination: str):
-        """Move to another city, spending fuel."""
         
         location = self.player.location
 
@@ -38,7 +37,6 @@ class Game:
         return f"  Traveled to {destination}. Fuel left: {self.player.fuel}"
 
     def buy(self, item: str, quantity: int):
-        """Buy goods from the current city."""
         
         city = self.cities[self.player.location]
         if item not in city.goods:
@@ -57,7 +55,6 @@ class Game:
         return f"Bought {quantity} {item} for ${total_cost}."
 
     def sell(self, item: str, quantity: int):
-        """Sell goods from your inventory to the current city."""
 
         if self.player.inventory.get(item, 0) < quantity:
             return "You don’t have enough items to sell."
@@ -75,6 +72,5 @@ class Game:
         return f"Sold {quantity} {item} for ${total_income}."
 
     def profit(self):
-        """Check how much profit the player made compared to start."""
         
         return self.player.money - self.starting_money
