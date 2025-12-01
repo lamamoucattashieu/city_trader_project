@@ -1,31 +1,18 @@
-City Trader
+# City Trader Project
 
-A simple board-style trading game built with Python.
-Important: The interface only works correctly when run inside WSL (Ubuntu on Windows).
-Do not use Windows Python or macOS — the UI will break.
+A Python trading game based on a city graph. Features a console interface and an optional graphical board interface.
 
-Requirements:
+# Description
 
-Run these inside WSL:
+The goal of the game is to make profit by moving between connected cities, buying goods at low prices, and selling them at higher prices. Each move costs fuel, so you have to plan routes carefully and pay attention to market prices.
 
-pip install game2dboard
+# Notes
+The graphical board interface uses the game2dboard library, it uses Python's built-in Tkinter module.
 
+#Tkinter warning
 
-(WSL already includes Tkinter support needed for the UI.)
-
-How to Run:
-
-From the project root, inside WSL, run:
-
-python -m city_trader.ui
-
-
-This will launch the interactive board game window.
-
-Important Notes:
-
-Use WSL only!
-The game interface does not render properly on native Windows or macOS.
+If your Python installation does not include Tkinter, the graphical interface will not work.
+The game interface does not render properly on native Windows or macOS. For best user experience, use WSL. 
 
 Do not run the game through VS Code’s “Run” button.
 Use a real terminal inside WSL.
