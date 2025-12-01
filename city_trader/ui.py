@@ -108,17 +108,22 @@ _game_over = False
 
 # Helpers
 def _clear():
+    # Average and worst case time complexity : O(R · C)
     for r in range(board.nrows):
         for c in range(board.ncols):
             board[r][c] = ""
 
 def neighbors(city):
+    # Average case time complexity: O(k)
+    # Worst case time complexity: O(k) (and k ≤ number of cities)
     return set(g.cities.get(city, {}).keys())
 
 def neighbor_text(city):
+    # Average and worst case time complexity: O(k)
     return ", ".join(f"{n} ({g.cities[city][n]} fuel)" for n in g.cities.get(city, {})) or "(none)"
 
 def get_input(prompt):
+    # Average and worst case time complexity: O(L)
     try:
         val = simpledialog.askstring("City Trader", prompt)
         return val.strip() if val else None
